@@ -1,0 +1,24 @@
+{
+	"schemaVersion": 1,
+	"id": "anvildrop",
+	"version": "${version}",
+	"name": "Anvil Drop",
+	"description": "An anvil avoidance minigame for Minecraft.",
+	"authors": [
+		"haykam821"
+	],
+	"contact": {
+		"homepage": "https://github.com/haykam821/Anvil-Drop#readme",
+		"issues": "https://github.com/haykam821/Anvil-Drop/issues"
+	},
+	"entrypoints": {
+		"main": [
+			"io.github.haykam821.anvildrop.Main"
+		]
+	},
+	"license": "MIT",
+	"icon": "assets/anvildrop/icon.png",
+	"depends": {
+		"fabricloader": ">=0.4.0"
+	}
+}

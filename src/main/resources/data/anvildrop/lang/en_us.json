@@ -1,0 +1,9 @@
+{
+	"gameType.anvildrop.anvildrop": "Anvil Drop",
+	"text.anvildrop.eliminated": "%s has been eliminated!",
+	"text.anvildrop.eliminated.falling_anvil": "%s has been eliminated by a falling anvil!",
+	"text.anvildrop.eliminated.hole_in_floor": "%s has been eliminated by a hole in the floor!",
+	"text.anvildrop.eliminated.out_of_bounds": "%s has been eliminated by going out of bounds!",
+	"text.anvildrop.no_winners": "Nobody won the game after %s rounds!",
+	"text.anvildrop.win": "%s has won the game after %s rounds!"
+}

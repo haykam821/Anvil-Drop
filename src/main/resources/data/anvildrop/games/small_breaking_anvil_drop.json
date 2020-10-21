@@ -1,0 +1,14 @@
+{
+	"type": "anvildrop:anvil_drop",
+	"breaking": true,
+	"chance": 0.04,
+	"map": {
+		"x": 18,
+		"z": 18
+	},
+	"players": {
+		"min": 1,
+		"max": 16,
+		"threshold": 4
+	}
+}
