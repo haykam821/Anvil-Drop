@@ -1,5 +1,6 @@
 {
 	"type": "anvildrop:anvil_drop",
+	"name": "Small Anvil Drop",
 	"map": {
 		"x": 18,
 		"z": 18

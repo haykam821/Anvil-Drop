@@ -1,5 +1,6 @@
 {
 	"type": "anvildrop:anvil_drop",
+	"name": "Small Breaking Anvil Drop",
 	"breaking": true,
 	"chance": 0.04,
 	"map": {

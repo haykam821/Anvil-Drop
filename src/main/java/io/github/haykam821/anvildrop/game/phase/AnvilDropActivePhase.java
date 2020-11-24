@@ -16,8 +16,8 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
-import xyz.nucleoid.plasmid.game.Game;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.GameLogic;
+import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.event.GameOpenListener;
 import xyz.nucleoid.plasmid.game.event.GameTickListener;
 import xyz.nucleoid.plasmid.game.event.PlayerAddListener;
@@ -29,7 +29,7 @@ import xyz.nucleoid.plasmid.util.PlayerRef;
 
 public class AnvilDropActivePhase {
 	private final ServerWorld world;
-	private final GameWorld gameWorld;
+	private final GameSpace gameSpace;
 	private final AnvilDropMap map;
 	private final AnvilDropConfig config;
 	private final Set<PlayerRef> players;
@@ -39,16 +39,16 @@ public class AnvilDropActivePhase {
 	private int rounds = 0;
 	private boolean anvilsDropping = false;
 
-	public AnvilDropActivePhase(GameWorld gameWorld, AnvilDropMap map, AnvilDropConfig config, Set<PlayerRef> players) {
-		this.world = gameWorld.getWorld();
-		this.gameWorld = gameWorld;
+	public AnvilDropActivePhase(GameSpace gameSpace, AnvilDropMap map, AnvilDropConfig config, Set<PlayerRef> players) {
+		this.world = gameSpace.getWorld();
+		this.gameSpace = gameSpace;
 		this.map = map;
 		this.config = config;
 		this.players = players;
 		this.ticksUntilSwitch = this.config.getDelay();
 	}
 
-	public static void setRules(Game game) {
+	public static void setRules(GameLogic game) {
 		game.setRule(GameRule.BLOCK_DROPS, RuleResult.DENY);
 		game.setRule(GameRule.CRAFTING, RuleResult.DENY);
 		game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
@@ -58,11 +58,11 @@ public class AnvilDropActivePhase {
 		game.setRule(GameRule.PVP, RuleResult.DENY);
 	}
 
-	public static void open(GameWorld gameWorld, AnvilDropMap map, AnvilDropConfig config) {
-		Set<PlayerRef> players = gameWorld.getPlayers().stream().map(PlayerRef::of).collect(Collectors.toSet());
-		AnvilDropActivePhase phase = new AnvilDropActivePhase(gameWorld, map, config, players);
+	public static void open(GameSpace gameSpace, AnvilDropMap map, AnvilDropConfig config) {
+		Set<PlayerRef> players = gameSpace.getPlayers().stream().map(PlayerRef::of).collect(Collectors.toSet());
+		AnvilDropActivePhase phase = new AnvilDropActivePhase(gameSpace, map, config, players);
 
-		gameWorld.openGame(game -> {
+		gameSpace.openGame(game -> {
 			AnvilDropActivePhase.setRules(game);
 
 			// Listeners
@@ -117,11 +117,11 @@ public class AnvilDropActivePhase {
 			if (this.players.size() == 1 && this.singleplayer) return;
 			
 			Text endingMessage = this.getEndingMessage();
-			for (ServerPlayerEntity player : this.gameWorld.getPlayers()) {
+			for (ServerPlayerEntity player : this.gameSpace.getPlayers()) {
 				player.sendMessage(endingMessage, false);
 			}
 
-			this.gameWorld.close();
+			this.gameSpace.close();
 		}
 	}
 
@@ -150,7 +150,7 @@ public class AnvilDropActivePhase {
 
 	private void eliminate(PlayerEntity eliminatedPlayer, String suffix, boolean remove) {
 		Text message = new TranslatableText("text.anvildrop.eliminated" + suffix, eliminatedPlayer.getDisplayName()).formatted(Formatting.RED);
-		for (ServerPlayerEntity player : this.gameWorld.getPlayers()) {
+		for (ServerPlayerEntity player : this.gameSpace.getPlayers()) {
 			player.sendMessage(message, false);
 		}
 
@@ -177,11 +177,11 @@ public class AnvilDropActivePhase {
 		return source == DamageSource.ANVIL || source == DamageSource.FALLING_BLOCK;
 	}
 
-	private boolean onPlayerDamage(ServerPlayerEntity player, DamageSource source, float amount) {
+	private ActionResult onPlayerDamage(ServerPlayerEntity player, DamageSource source, float amount) {
 		if (AnvilDropActivePhase.isEliminatingDamageSource(source) && this.players.contains(PlayerRef.of(player))) {
 			this.eliminate(player, ".falling_anvil", true);
 		}
-		return true;
+		return ActionResult.SUCCESS;
 	}
 
 	public static void spawn(ServerWorld world, AnvilDropMap map, ServerPlayerEntity player) {

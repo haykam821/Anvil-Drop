@@ -1,5 +1,7 @@
 package io.github.haykam821.anvildrop.game.map;
 
+import java.util.Iterator;
+
 import io.github.haykam821.anvildrop.game.AnvilDropConfig;
 import net.minecraft.block.AnvilBlock;
 import net.minecraft.block.BlockState;
@@ -10,8 +12,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplate;
-import xyz.nucleoid.plasmid.game.map.template.TemplateChunkGenerator;
+import xyz.nucleoid.plasmid.map.template.MapTemplate;
+import xyz.nucleoid.plasmid.map.template.TemplateChunkGenerator;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 public class AnvilDropMap {
@@ -46,7 +48,9 @@ public class AnvilDropMap {
 	}
 
 	public void clearAnvils(ServerWorld world) {
-		for (BlockPos pos : this.clearBounds.iterate()) {
+		Iterator<BlockPos> iterator = this.clearBounds.iterator();
+		while (iterator.hasNext()) {
+			BlockPos pos = iterator.next();
 			if (this.config.isBreaking() && !world.isAir(pos)) {
 				world.breakBlock(pos.down(), false);
 			}
@@ -55,7 +59,9 @@ public class AnvilDropMap {
 	}
 
 	public void dropAnvils(ServerWorld world) {
-		for (BlockPos pos : this.dropBounds.iterate()) {
+		Iterator<BlockPos> iterator = this.dropBounds.iterator();
+		while (iterator.hasNext()) {
+			BlockPos pos = iterator.next();
 			if (world.getRandom().nextDouble() < this.config.getChance()) {
 				BlockState state = world.getRandom().nextBoolean() ? ANVIL_STATE : ALTERNATE_ANVIL_STATE;
 				world.setBlockState(pos, state, 0);
@@ -64,6 +70,6 @@ public class AnvilDropMap {
 	}
 
 	public ChunkGenerator createGenerator(MinecraftServer server) {
-		return new TemplateChunkGenerator(server, this.template, BlockPos.ORIGIN);
+		return new TemplateChunkGenerator(server, this.template);
 	}
 }

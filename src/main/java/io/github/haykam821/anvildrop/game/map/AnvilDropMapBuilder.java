@@ -1,13 +1,12 @@
 package io.github.haykam821.anvildrop.game.map;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.Iterator;
 
 import io.github.haykam821.anvildrop.game.AnvilDropConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplate;
+import xyz.nucleoid.plasmid.map.template.MapTemplate;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 public class AnvilDropMapBuilder {
@@ -23,19 +22,17 @@ public class AnvilDropMapBuilder {
 		this.config = config;
 	}
 
-	public CompletableFuture<AnvilDropMap> create() {
-		return CompletableFuture.supplyAsync(() -> {
-			MapTemplate template = MapTemplate.createEmpty();
-			AnvilDropMapConfig mapConfig = this.config.getMapConfig();
+	public AnvilDropMap create() {
+		MapTemplate template = MapTemplate.createEmpty();
+		AnvilDropMapConfig mapConfig = this.config.getMapConfig();
 
-			BlockBounds bounds = new BlockBounds(BlockPos.ORIGIN, new BlockPos(mapConfig.getX() + 1, 3, mapConfig.getZ() + 1));
-			this.build(bounds, template, mapConfig);
+		BlockBounds bounds = new BlockBounds(BlockPos.ORIGIN, new BlockPos(mapConfig.getX() + 1, 3, mapConfig.getZ() + 1));
+		this.build(bounds, template, mapConfig);
 
-			BlockBounds clearBounds = new BlockBounds(new BlockPos(1, 1, 1), new BlockPos(mapConfig.getX(), 1, mapConfig.getZ()));
-			BlockBounds dropBounds = clearBounds.offset(new BlockPos(0, this.config.getDropHeight(), 0));
+		BlockBounds clearBounds = new BlockBounds(new BlockPos(1, 1, 1), new BlockPos(mapConfig.getX(), 1, mapConfig.getZ()));
+		BlockBounds dropBounds = clearBounds.offset(new BlockPos(0, this.config.getDropHeight(), 0));
 
-			return new AnvilDropMap(template, config, bounds, clearBounds, dropBounds);
-		}, Util.getMainWorkerExecutor());
+		return new AnvilDropMap(template, config, bounds, clearBounds, dropBounds);
 	}
 
 	private BlockState getBlockState(BlockPos pos, BlockBounds bounds, AnvilDropMapConfig mapConfig) {
@@ -60,7 +57,10 @@ public class AnvilDropMapBuilder {
 	}
 
 	public void build(BlockBounds bounds, MapTemplate template, AnvilDropMapConfig mapConfig) {
-		for (BlockPos pos : bounds.iterate()) {
+		Iterator<BlockPos> iterator = bounds.iterator();
+		while (iterator.hasNext()) {
+			BlockPos pos = iterator.next();
+
 			BlockState state = this.getBlockState(pos, bounds, mapConfig);
 			if (state != null) {
 				template.setBlockState(pos, state);
