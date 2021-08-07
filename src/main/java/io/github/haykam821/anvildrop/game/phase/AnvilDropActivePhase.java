@@ -80,9 +80,21 @@ public class AnvilDropActivePhase {
 
  		for (PlayerRef playerRef : this.players) {
 			playerRef.ifOnline(this.world, player -> {
+				this.updateRoundsExperienceLevel(player);
 				player.setGameMode(GameMode.ADVENTURE);
 				AnvilDropActivePhase.spawn(this.world, this.map, player);
 			});
+		}
+	}
+
+	private void updateRoundsExperienceLevel(ServerPlayerEntity player) {
+		player.setExperienceLevel(this.rounds + 1);
+	}
+
+	private void setRounds(int rounds) {
+		this.rounds = rounds;
+		for (ServerPlayerEntity player : this.gameSpace.getPlayers()) {
+			this.updateRoundsExperienceLevel(player);
 		}
 	}
 
@@ -96,7 +108,7 @@ public class AnvilDropActivePhase {
 				this.map.dropAnvils(this.world);
 			} else {
 				this.map.clearAnvils(this.world);
-				this.rounds += 1;
+				this.setRounds(this.rounds + 1);
 			}
 		}
 
@@ -140,7 +152,9 @@ public class AnvilDropActivePhase {
 		player.setGameMode(GameMode.SPECTATOR);
 	}
 
-	private void addPlayer(PlayerEntity player) {
+	private void addPlayer(ServerPlayerEntity player) {
+		this.updateRoundsExperienceLevel(player);
+
 		if (!this.players.contains(PlayerRef.of(player))) {
 			this.setSpectator(player);
 		} else if (this.opened) {
