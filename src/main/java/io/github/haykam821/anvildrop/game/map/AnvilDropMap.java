@@ -12,9 +12,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
-import xyz.nucleoid.plasmid.map.template.MapTemplate;
-import xyz.nucleoid.plasmid.map.template.TemplateChunkGenerator;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.map_templates.BlockBounds;
+import xyz.nucleoid.map_templates.MapTemplate;
+import xyz.nucleoid.plasmid.game.world.generator.TemplateChunkGenerator;
 
 public class AnvilDropMap {
 	private static final BlockState CLEAR_STATE = Blocks.AIR.getDefaultState();
@@ -33,7 +33,7 @@ public class AnvilDropMap {
 		this.config = config;
 
 		this.platformBounds = platformBounds;
-		this.box = this.platformBounds.toBox().expand(-1, -0.5, -1);
+		this.box = this.platformBounds.asBox().expand(-1, -0.5, -1);
 
 		this.clearBounds = clearBounds;
 		this.dropBounds = dropBounds;

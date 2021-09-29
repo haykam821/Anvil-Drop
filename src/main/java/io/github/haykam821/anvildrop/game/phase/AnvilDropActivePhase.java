@@ -16,17 +16,15 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
+import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameLogic;
 import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.event.GameOpenListener;
-import xyz.nucleoid.plasmid.game.event.GameTickListener;
-import xyz.nucleoid.plasmid.game.event.PlayerAddListener;
-import xyz.nucleoid.plasmid.game.event.PlayerDamageListener;
-import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
-import xyz.nucleoid.plasmid.game.rule.GameRule;
-import xyz.nucleoid.plasmid.game.rule.RuleResult;
+import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
+import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.util.PlayerRef;
+import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
+import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 public class AnvilDropActivePhase {
 	private final ServerWorld world;
@@ -40,8 +38,8 @@ public class AnvilDropActivePhase {
 	private int rounds = 0;
 	private boolean anvilsDropping = false;
 
-	public AnvilDropActivePhase(GameSpace gameSpace, AnvilDropMap map, AnvilDropConfig config, Set<PlayerRef> players) {
-		this.world = gameSpace.getWorld();
+	public AnvilDropActivePhase(GameSpace gameSpace, ServerWorld world, AnvilDropMap map, AnvilDropConfig config, Set<PlayerRef> players) {
+		this.world = world;
 		this.gameSpace = gameSpace;
 		this.map = map;
 		this.config = config;
@@ -49,40 +47,40 @@ public class AnvilDropActivePhase {
 		this.ticksUntilSwitch = this.config.getDelay();
 	}
 
-	public static void setRules(GameLogic game) {
-		game.setRule(GameRule.BLOCK_DROPS, RuleResult.DENY);
-		game.setRule(GameRule.CRAFTING, RuleResult.DENY);
-		game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
-		game.setRule(GameRule.HUNGER, RuleResult.DENY);
-		game.setRule(GameRule.INTERACTION, RuleResult.DENY);
-		game.setRule(GameRule.PORTALS, RuleResult.DENY);
-		game.setRule(GameRule.PVP, RuleResult.DENY);
+	public static void setRules(GameActivity activity) {
+		activity.deny(GameRuleType.BLOCK_DROPS);
+		activity.deny(GameRuleType.CRAFTING);
+		activity.deny(GameRuleType.FALL_DAMAGE);
+		activity.deny(GameRuleType.HUNGER);
+		activity.deny(GameRuleType.INTERACTION);
+		activity.deny(GameRuleType.PORTALS);
+		activity.deny(GameRuleType.PVP);
 	}
 
-	public static void open(GameSpace gameSpace, AnvilDropMap map, AnvilDropConfig config) {
+	public static void open(GameSpace gameSpace, ServerWorld world, AnvilDropMap map, AnvilDropConfig config) {
 		Set<PlayerRef> players = gameSpace.getPlayers().stream().map(PlayerRef::of).collect(Collectors.toSet());
-		AnvilDropActivePhase phase = new AnvilDropActivePhase(gameSpace, map, config, players);
+		AnvilDropActivePhase phase = new AnvilDropActivePhase(gameSpace, world, map, config, players);
 
-		gameSpace.openGame(game -> {
-			AnvilDropActivePhase.setRules(game);
+		gameSpace.setActivity(activity -> {
+			AnvilDropActivePhase.setRules(activity);
 
 			// Listeners
-			game.on(GameOpenListener.EVENT, phase::open);
-			game.on(GameTickListener.EVENT, phase::tick);
-			game.on(PlayerAddListener.EVENT, phase::addPlayer);
-			game.on(PlayerDeathListener.EVENT, phase::onPlayerDeath);
-			game.on(PlayerDamageListener.EVENT, phase::onPlayerDamage);
+			activity.listen(GameActivityEvents.ENABLE, phase::enable);
+			activity.listen(GameActivityEvents.TICK, phase::tick);
+			activity.listen(GamePlayerEvents.ADD, phase::addPlayer);
+			activity.listen(PlayerDeathEvent.EVENT, phase::onPlayerDeath);
+			activity.listen(PlayerDamageEvent.EVENT, phase::onPlayerDamage);
 		});
 	}
 
-	private void open() {
+	private void enable() {
 		this.opened = true;
 		this.singleplayer = this.players.size() == 1;
 
  		for (PlayerRef playerRef : this.players) {
 			playerRef.ifOnline(this.world, player -> {
 				this.updateRoundsExperienceLevel(player);
-				player.setGameMode(GameMode.ADVENTURE);
+				player.changeGameMode(GameMode.ADVENTURE);
 				AnvilDropActivePhase.spawn(this.world, this.map, player);
 			});
 		}
@@ -149,8 +147,8 @@ public class AnvilDropActivePhase {
 		return new TranslatableText("text.anvildrop.no_winners", this.rounds).formatted(Formatting.GOLD);
 	}
 
-	private void setSpectator(PlayerEntity player) {
-		player.setGameMode(GameMode.SPECTATOR);
+	private void setSpectator(ServerPlayerEntity player) {
+		player.changeGameMode(GameMode.SPECTATOR);
 	}
 
 	private void addPlayer(ServerPlayerEntity player) {
@@ -163,7 +161,7 @@ public class AnvilDropActivePhase {
 		}
 	}
 
-	private void eliminate(PlayerEntity eliminatedPlayer, String suffix, boolean remove) {
+	private void eliminate(ServerPlayerEntity eliminatedPlayer, String suffix, boolean remove) {
 		Text message = new TranslatableText("text.anvildrop.eliminated" + suffix, eliminatedPlayer.getDisplayName()).formatted(Formatting.RED);
 		for (ServerPlayerEntity player : this.gameSpace.getPlayers()) {
 			player.sendMessage(message, false);
@@ -175,7 +173,7 @@ public class AnvilDropActivePhase {
 		this.setSpectator(eliminatedPlayer);
 	}
 
-	private void eliminate(PlayerEntity eliminatedPlayer, boolean remove) {
+	private void eliminate(ServerPlayerEntity eliminatedPlayer, boolean remove) {
 		this.eliminate(eliminatedPlayer, "", remove);
 	}
 
@@ -200,7 +198,12 @@ public class AnvilDropActivePhase {
 	}
 
 	public static void spawn(ServerWorld world, AnvilDropMap map, ServerPlayerEntity player) {
-		Vec3d center = map.getPlatformBounds().getCenter();
-		player.teleport(world, center.getX(), map.getPlatformBounds().getMin().getY() + 1, center.getZ(), 0, 0);
+		Vec3d spawnPos = AnvilDropActivePhase.getSpawnPos(map);
+		player.teleport(world, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), 0, 0);
+	}
+
+	protected static Vec3d getSpawnPos(AnvilDropMap map) {
+		Vec3d center = map.getPlatformBounds().center();
+		return new Vec3d(center.getX(), map.getPlatformBounds().min().getY() + 1, center.getZ());
 	}
 }

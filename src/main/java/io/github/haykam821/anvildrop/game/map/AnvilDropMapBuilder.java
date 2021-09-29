@@ -6,8 +6,8 @@ import io.github.haykam821.anvildrop.game.AnvilDropConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
-import xyz.nucleoid.plasmid.map.template.MapTemplate;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.map_templates.BlockBounds;
+import xyz.nucleoid.map_templates.MapTemplate;
 
 public class AnvilDropMapBuilder {
 	private static final BlockState FLOOR = Blocks.SMOOTH_STONE.getDefaultState();
@@ -26,18 +26,18 @@ public class AnvilDropMapBuilder {
 		MapTemplate template = MapTemplate.createEmpty();
 		AnvilDropMapConfig mapConfig = this.config.getMapConfig();
 
-		BlockBounds bounds = new BlockBounds(BlockPos.ORIGIN, new BlockPos(mapConfig.getX() + 1, 3, mapConfig.getZ() + 1));
+		BlockBounds bounds = BlockBounds.of(BlockPos.ORIGIN, new BlockPos(mapConfig.getX() + 1, 3, mapConfig.getZ() + 1));
 		this.build(bounds, template, mapConfig);
 
-		BlockBounds clearBounds = new BlockBounds(new BlockPos(1, 1, 1), new BlockPos(mapConfig.getX(), 1, mapConfig.getZ()));
+		BlockBounds clearBounds = BlockBounds.of(new BlockPos(1, 1, 1), new BlockPos(mapConfig.getX(), 1, mapConfig.getZ()));
 		BlockBounds dropBounds = clearBounds.offset(new BlockPos(0, this.config.getDropHeight(), 0));
 
 		return new AnvilDropMap(template, config, bounds, clearBounds, dropBounds);
 	}
 
 	private BlockState getBlockState(BlockPos pos, BlockBounds bounds, AnvilDropMapConfig mapConfig) {
-		int layer = pos.getY() - bounds.getMin().getY();
-		boolean outline = pos.getX() == bounds.getMin().getX() || pos.getX() == bounds.getMax().getX() || pos.getZ() == bounds.getMin().getZ() || pos.getZ() == bounds.getMax().getZ();
+		int layer = pos.getY() - bounds.min().getY();
+		boolean outline = pos.getX() == bounds.min().getX() || pos.getX() == bounds.max().getX() || pos.getZ() == bounds.min().getZ() || pos.getZ() == bounds.max().getZ();
 
 		if (outline) {
 			if (layer == 0) {

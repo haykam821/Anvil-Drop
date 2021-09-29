@@ -1,6 +1,5 @@
 {
 	"type": "anvildrop:anvil_drop",
-	"name": "Anvil Drop",
 	"map": {
 		"x": 36,
 		"z": 36
