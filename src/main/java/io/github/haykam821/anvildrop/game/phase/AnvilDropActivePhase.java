@@ -21,6 +21,8 @@ import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.game.player.PlayerOffer;
+import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
@@ -67,7 +69,8 @@ public class AnvilDropActivePhase {
 			// Listeners
 			activity.listen(GameActivityEvents.ENABLE, phase::enable);
 			activity.listen(GameActivityEvents.TICK, phase::tick);
-			activity.listen(GamePlayerEvents.ADD, phase::addPlayer);
+			activity.listen(GamePlayerEvents.OFFER, phase::offerPlayer);
+			activity.listen(GamePlayerEvents.REMOVE, phase::removePlayer);
 			activity.listen(PlayerDeathEvent.EVENT, phase::onPlayerDeath);
 			activity.listen(PlayerDamageEvent.EVENT, phase::onPlayerDamage);
 		});
@@ -151,14 +154,15 @@ public class AnvilDropActivePhase {
 		player.changeGameMode(GameMode.SPECTATOR);
 	}
 
-	private void addPlayer(ServerPlayerEntity player) {
-		this.updateRoundsExperienceLevel(player);
+	private PlayerOfferResult offerPlayer(PlayerOffer offer) {
+		return offer.accept(this.world, AnvilDropActivePhase.getSpawnPos(this.map)).and(() -> {
+			this.updateRoundsExperienceLevel(offer.player());
+			this.setSpectator(offer.player());
+		});
+	}
 
-		if (!this.players.contains(PlayerRef.of(player))) {
-			this.setSpectator(player);
-		} else if (this.opened) {
-			this.eliminate(player, true);
-		}
+	private void removePlayer(ServerPlayerEntity player) {
+		this.eliminate(player, true);
 	}
 
 	private void eliminate(ServerPlayerEntity eliminatedPlayer, String suffix, boolean remove) {
