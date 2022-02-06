@@ -166,13 +166,16 @@ public class AnvilDropActivePhase {
 	}
 
 	private void eliminate(ServerPlayerEntity eliminatedPlayer, String suffix, boolean remove) {
+		PlayerRef eliminatedRef = PlayerRef.of(eliminatedPlayer);
+		if (!this.players.contains(eliminatedRef)) return;
+
 		Text message = new TranslatableText("text.anvildrop.eliminated" + suffix, eliminatedPlayer.getDisplayName()).formatted(Formatting.RED);
 		for (ServerPlayerEntity player : this.gameSpace.getPlayers()) {
 			player.sendMessage(message, false);
 		}
 
 		if (remove) {
-			this.players.remove(PlayerRef.of(eliminatedPlayer));
+			this.players.remove(eliminatedRef);
 		}
 		this.setSpectator(eliminatedPlayer);
 	}
