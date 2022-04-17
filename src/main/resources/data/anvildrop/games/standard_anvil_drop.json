@@ -1,5 +1,6 @@
 {
 	"type": "anvildrop:anvil_drop",
+	"icon": "minecraft:anvil",
 	"map": {
 		"x": 36,
 		"z": 36

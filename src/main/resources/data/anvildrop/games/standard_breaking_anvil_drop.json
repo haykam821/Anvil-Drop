@@ -1,5 +1,6 @@
 {
 	"type": "anvildrop:anvil_drop",
+	"icon": "minecraft:damaged_anvil",
 	"breaking": true,
 	"chance": 0.04,
 	"map": {
