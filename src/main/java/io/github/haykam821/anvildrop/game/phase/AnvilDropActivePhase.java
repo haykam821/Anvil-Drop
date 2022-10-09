@@ -11,7 +11,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3d;
@@ -144,10 +143,10 @@ public class AnvilDropActivePhase {
 			PlayerRef winnerRef = this.players.iterator().next();
 			if (winnerRef.isOnline(this.world)) {
 				PlayerEntity winner = winnerRef.getEntity(this.world);
-				return new TranslatableText("text.anvildrop.win", winner.getDisplayName(), this.rounds).formatted(Formatting.GOLD);
+				return Text.translatable("text.anvildrop.win", winner.getDisplayName(), this.rounds).formatted(Formatting.GOLD);
 			}
 		}
-		return new TranslatableText("text.anvildrop.no_winners", this.rounds).formatted(Formatting.GOLD);
+		return Text.translatable("text.anvildrop.no_winners", this.rounds).formatted(Formatting.GOLD);
 	}
 
 	private void setSpectator(ServerPlayerEntity player) {
@@ -169,7 +168,7 @@ public class AnvilDropActivePhase {
 		PlayerRef eliminatedRef = PlayerRef.of(eliminatedPlayer);
 		if (!this.players.contains(eliminatedRef)) return;
 
-		Text message = new TranslatableText("text.anvildrop.eliminated" + suffix, eliminatedPlayer.getDisplayName()).formatted(Formatting.RED);
+		Text message = Text.translatable("text.anvildrop.eliminated" + suffix, eliminatedPlayer.getDisplayName()).formatted(Formatting.RED);
 		for (ServerPlayerEntity player : this.gameSpace.getPlayers()) {
 			player.sendMessage(message, false);
 		}
