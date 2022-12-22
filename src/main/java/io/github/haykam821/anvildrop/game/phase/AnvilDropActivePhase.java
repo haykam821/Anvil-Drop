@@ -193,7 +193,7 @@ public class AnvilDropActivePhase {
 	}
 
 	private static boolean isEliminatingDamageSource(DamageSource source) {
-		return source == DamageSource.ANVIL || source == DamageSource.FALLING_BLOCK;
+		return source.isFallingBlock();
 	}
 
 	private ActionResult onPlayerDamage(ServerPlayerEntity player, DamageSource source, float amount) {
