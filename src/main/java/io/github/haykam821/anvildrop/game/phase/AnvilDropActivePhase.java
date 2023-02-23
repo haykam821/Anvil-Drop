@@ -36,6 +36,7 @@ public class AnvilDropActivePhase {
 	private boolean singleplayer;
 	private boolean opened;
 	private int ticksUntilSwitch;
+	private int ticksUntilClose = -1;
 	private int rounds = 0;
 	private boolean anvilsDropping = false;
 
@@ -100,6 +101,16 @@ public class AnvilDropActivePhase {
 	}
 
 	private void tick() {
+		// Decrease ticks until game end to zero
+		if (this.isGameEnding()) {
+			if (this.ticksUntilClose == 0) {
+				this.gameSpace.close(GameCloseReason.FINISHED);
+			}
+
+			this.ticksUntilClose -= 1;
+			return;
+		}
+
 		this.ticksUntilSwitch -= 1;
 		if (this.ticksUntilSwitch < 0) {
 			this.anvilsDropping = !this.anvilsDropping;
@@ -134,7 +145,7 @@ public class AnvilDropActivePhase {
 				player.sendMessage(endingMessage, false);
 			}
 
-			this.gameSpace.close(GameCloseReason.FINISHED);
+			this.ticksUntilClose = this.config.getTicksUntilClose().get(this.world.getRandom());
 		}
 	}
 
@@ -147,6 +158,10 @@ public class AnvilDropActivePhase {
 			}
 		}
 		return Text.translatable("text.anvildrop.no_winners", this.rounds).formatted(Formatting.GOLD);
+	}
+
+	private boolean isGameEnding() {
+		return this.ticksUntilClose >= 0;
 	}
 
 	private void setSpectator(ServerPlayerEntity player) {
@@ -165,6 +180,8 @@ public class AnvilDropActivePhase {
 	}
 
 	private void eliminate(ServerPlayerEntity eliminatedPlayer, String suffix, boolean remove) {
+		if (this.isGameEnding()) return;
+
 		PlayerRef eliminatedRef = PlayerRef.of(eliminatedPlayer);
 		if (!this.players.contains(eliminatedRef)) return;
 
