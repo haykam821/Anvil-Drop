@@ -8,6 +8,7 @@ import io.github.haykam821.anvildrop.game.AnvilDropConfig;
 import io.github.haykam821.anvildrop.game.map.AnvilDropMap;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -34,7 +35,6 @@ public class AnvilDropActivePhase {
 	private final AnvilDropConfig config;
 	private final Set<PlayerRef> players;
 	private boolean singleplayer;
-	private boolean opened;
 	private int ticksUntilSwitch;
 	private int ticksUntilClose = -1;
 	private int rounds = 0;
@@ -77,7 +77,6 @@ public class AnvilDropActivePhase {
 	}
 
 	private void enable() {
-		this.opened = true;
 		this.singleplayer = this.players.size() == 1;
 
  		for (PlayerRef playerRef : this.players) {
@@ -210,7 +209,7 @@ public class AnvilDropActivePhase {
 	}
 
 	private static boolean isEliminatingDamageSource(DamageSource source) {
-		return source.isFallingBlock();
+		return source.isIn(DamageTypeTags.DAMAGES_HELMET);
 	}
 
 	private ActionResult onPlayerDamage(ServerPlayerEntity player, DamageSource source, float amount) {
