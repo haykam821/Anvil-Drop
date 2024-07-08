@@ -52,7 +52,7 @@ public class AnvilDropMap {
 		while (iterator.hasNext()) {
 			BlockPos pos = iterator.next();
 			if (this.config.isBreaking() && !world.isAir(pos)) {
-				world.breakBlock(pos.down(), false);
+				world.breakBlock(pos.withY(0), false);
 			}
 			world.setBlockState(pos, CLEAR_STATE);
 		}

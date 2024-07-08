@@ -18,6 +18,7 @@ public class AnvilDropConfig {
 			Codec.INT.optionalFieldOf("delay", 20 * 2).forGetter(AnvilDropConfig::getDelay),
 			Codec.DOUBLE.optionalFieldOf("chance", 0.4).forGetter(AnvilDropConfig::getChance),
 			Codec.INT.optionalFieldOf("drop_height", 15).forGetter(AnvilDropConfig::getDropHeight),
+			Codec.INT.optionalFieldOf("stack_height", 0).forGetter(AnvilDropConfig::getStackHeight),
 			Codec.BOOL.optionalFieldOf("breaking", false).forGetter(AnvilDropConfig::isBreaking)
 		).apply(instance, AnvilDropConfig::new);
 	});
@@ -28,15 +29,17 @@ public class AnvilDropConfig {
 	private final int delay;
 	private final double chance;
 	private final int dropHeight;
+	private final int stackHeight;
 	private final boolean breaking;
 
-	public AnvilDropConfig(AnvilDropMapConfig mapConfig, PlayerConfig playerConfig, IntProvider ticksUntilClose, int delay, double chance, int dropHeight, boolean breaking) {
+	public AnvilDropConfig(AnvilDropMapConfig mapConfig, PlayerConfig playerConfig, IntProvider ticksUntilClose, int delay, double chance, int dropHeight, int stackHeight, boolean breaking) {
 		this.mapConfig = mapConfig;
 		this.playerConfig = playerConfig;
 		this.ticksUntilClose = ticksUntilClose;
 		this.delay = delay;
 		this.chance = chance;
 		this.dropHeight = dropHeight;
+		this.stackHeight = stackHeight;
 		this.breaking = breaking;
 	}
 
@@ -62,6 +65,10 @@ public class AnvilDropConfig {
 
 	public int getDropHeight() {
 		return this.dropHeight;
+	}
+
+	public int getStackHeight() {
+		return this.stackHeight;
 	}
 
 	public boolean isBreaking() {

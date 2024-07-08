@@ -1,8 +1,10 @@
 {
 	"game.anvildrop.small_anvil_drop": "Small Anvil Drop",
 	"game.anvildrop.small_breaking_anvil_drop": "Small Breaking Anvil Drop",
+	"game.anvildrop.small_stacking_anvil_drop": "Small Stacking Anvil Drop",
 	"game.anvildrop.standard_anvil_drop": "Anvil Drop",
 	"game.anvildrop.standard_breaking_anvil_drop": "Breaking Anvil Drop",
+	"game.anvildrop.standard_stacking_anvil_drop": "Stacking Anvil Drop",
 	"gameType.anvildrop.anvildrop": "Anvil Drop",
 	"text.anvildrop.eliminated": "%s has been eliminated!",
 	"text.anvildrop.eliminated.falling_anvil": "%s has been eliminated by a falling anvil!",

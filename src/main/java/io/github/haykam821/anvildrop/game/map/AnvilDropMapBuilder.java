@@ -26,30 +26,40 @@ public class AnvilDropMapBuilder {
 		MapTemplate template = MapTemplate.createEmpty();
 		AnvilDropMapConfig mapConfig = this.config.getMapConfig();
 
-		BlockBounds bounds = BlockBounds.of(BlockPos.ORIGIN, new BlockPos(mapConfig.getX() + 1, 3, mapConfig.getZ() + 1));
+		BlockBounds bounds = BlockBounds.of(BlockPos.ORIGIN, new BlockPos(mapConfig.getX() + 1, this.config.getStackHeight() + 3, mapConfig.getZ() + 1));
 		this.build(bounds, template, mapConfig);
 
-		BlockBounds clearBounds = BlockBounds.of(new BlockPos(1, 1, 1), new BlockPos(mapConfig.getX(), 1, mapConfig.getZ()));
-		BlockBounds dropBounds = clearBounds.offset(new BlockPos(0, this.config.getDropHeight(), 0));
+		BlockBounds clearBounds = createInnerBounds(mapConfig, this.config.getStackHeight() + 1);
+		BlockBounds dropBounds = createInnerBounds(mapConfig, this.config.getDropHeight() + 1);
 
 		return new AnvilDropMap(template, config, bounds, clearBounds, dropBounds);
 	}
 
+	private BlockBounds createInnerBounds(AnvilDropMapConfig mapConfig, int y) {
+		return BlockBounds.of(new BlockPos(1, y, 1), new BlockPos(mapConfig.getX(), y, mapConfig.getZ()));
+	}
+
 	private BlockState getBlockState(BlockPos pos, BlockBounds bounds, AnvilDropMapConfig mapConfig) {
-		int layer = pos.getY() - bounds.min().getY();
-		boolean outline = pos.getX() == bounds.min().getX() || pos.getX() == bounds.max().getX() || pos.getZ() == bounds.min().getZ() || pos.getZ() == bounds.max().getZ();
+		int x = pos.getX();
+		int y = pos.getY();
+		int z = pos.getZ();
+
+		BlockPos min = bounds.min();
+		BlockPos max = bounds.max();
+
+		boolean outline = x == min.getX() || x == max.getX() || z == min.getZ() || z == max.getZ();
 
 		if (outline) {
-			if (layer == 0) {
+			if (y == 0) {
 				return FLOOR_OUTLINE;
-			} else if (layer == 1) {
-				return WALL;
-			} else if (layer == 2) {
+			} else if (y == max.getY() - 1) {
 				return WALL_TOP;
-			} else if (layer == 3) {
+			} else if (y == max.getY()) {
 				return BARRIER;
+			} else {
+				return WALL;
 			}
-		} else if (layer == 0) {
+		} else if (y == 0) {
 			return FLOOR;
 		}
 
