@@ -6,18 +6,19 @@ import io.github.haykam821.anvildrop.game.map.AnvilDropMapBuilder;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
 import net.minecraft.world.GameMode;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
-import xyz.nucleoid.plasmid.game.GameOpenContext;
-import xyz.nucleoid.plasmid.game.GameOpenProcedure;
-import xyz.nucleoid.plasmid.game.GameResult;
-import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.common.GameWaitingLobby;
-import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
-import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
-import xyz.nucleoid.plasmid.game.player.PlayerOffer;
-import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
+import xyz.nucleoid.plasmid.api.game.GameOpenContext;
+import xyz.nucleoid.plasmid.api.game.GameOpenProcedure;
+import xyz.nucleoid.plasmid.api.game.GameResult;
+import xyz.nucleoid.plasmid.api.game.GameSpace;
+import xyz.nucleoid.plasmid.api.game.common.GameWaitingLobby;
+import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
+import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.api.game.player.JoinAcceptor;
+import xyz.nucleoid.plasmid.api.game.player.JoinAcceptorResult;
+import xyz.nucleoid.plasmid.api.game.player.JoinOffer;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 public class AnvilDropWaitingPhase {
@@ -48,14 +49,15 @@ public class AnvilDropWaitingPhase {
 
 			// Listeners
 			game.listen(PlayerDeathEvent.EVENT, phase::onPlayerDeath);
-			game.listen(GamePlayerEvents.OFFER, phase::offerPlayer);
+			game.listen(GamePlayerEvents.ACCEPT, phase::onAcceptPlayers);
+			game.listen(GamePlayerEvents.OFFER, JoinOffer::accept);
 			game.listen(GameActivityEvents.REQUEST_START, phase::requestStart);
 		});
 	}
 
-	private PlayerOfferResult offerPlayer(PlayerOffer offer) {
-		return offer.accept(this.world, AnvilDropActivePhase.getSpawnPos(this.map)).and(() -> {
-			offer.player().changeGameMode(GameMode.ADVENTURE);
+	private JoinAcceptorResult onAcceptPlayers(JoinAcceptor acceptor) {
+		return acceptor.teleport(this.world, AnvilDropActivePhase.getSpawnPos(this.map)).thenRunForEach(player -> {
+			player.changeGameMode(GameMode.ADVENTURE);
 		});
 	}
 
@@ -64,8 +66,8 @@ public class AnvilDropWaitingPhase {
 		return GameResult.ok();
 	}
 
-	private ActionResult onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
+	private EventResult onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
 		AnvilDropActivePhase.spawn(this.world, this.map, player);
-		return ActionResult.FAIL;
+		return EventResult.DENY;
 	}
 }
