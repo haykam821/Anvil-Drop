@@ -1,19 +1,20 @@
 package io.github.haykam821.anvildrop.game;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.haykam821.anvildrop.game.map.AnvilDropMapConfig;
 import net.minecraft.SharedConstants;
 import net.minecraft.util.math.intprovider.ConstantIntProvider;
 import net.minecraft.util.math.intprovider.IntProvider;
-import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
+import xyz.nucleoid.plasmid.api.game.common.config.WaitingLobbyConfig;
 
 public class AnvilDropConfig {
-	public static final Codec<AnvilDropConfig> CODEC = RecordCodecBuilder.create(instance -> {
+	public static final MapCodec<AnvilDropConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> {
 		return instance.group(
 			AnvilDropMapConfig.CODEC.fieldOf("map").forGetter(AnvilDropConfig::getMapConfig),
-			PlayerConfig.CODEC.fieldOf("players").forGetter(AnvilDropConfig::getPlayerConfig),
+			WaitingLobbyConfig.CODEC.fieldOf("players").forGetter(AnvilDropConfig::getPlayerConfig),
 			IntProvider.NON_NEGATIVE_CODEC.optionalFieldOf("ticks_until_close", ConstantIntProvider.create(SharedConstants.TICKS_PER_SECOND * 5)).forGetter(AnvilDropConfig::getTicksUntilClose),
 			Codec.INT.optionalFieldOf("delay", 20 * 2).forGetter(AnvilDropConfig::getDelay),
 			Codec.DOUBLE.optionalFieldOf("chance", 0.4).forGetter(AnvilDropConfig::getChance),
@@ -24,7 +25,7 @@ public class AnvilDropConfig {
 	});
 
 	private final AnvilDropMapConfig mapConfig;
-	private final PlayerConfig playerConfig;
+	private final WaitingLobbyConfig playerConfig;
 	private final IntProvider ticksUntilClose;
 	private final int delay;
 	private final double chance;
@@ -32,7 +33,7 @@ public class AnvilDropConfig {
 	private final int stackHeight;
 	private final boolean breaking;
 
-	public AnvilDropConfig(AnvilDropMapConfig mapConfig, PlayerConfig playerConfig, IntProvider ticksUntilClose, int delay, double chance, int dropHeight, int stackHeight, boolean breaking) {
+	public AnvilDropConfig(AnvilDropMapConfig mapConfig, WaitingLobbyConfig playerConfig, IntProvider ticksUntilClose, int delay, double chance, int dropHeight, int stackHeight, boolean breaking) {
 		this.mapConfig = mapConfig;
 		this.playerConfig = playerConfig;
 		this.ticksUntilClose = ticksUntilClose;
@@ -47,7 +48,7 @@ public class AnvilDropConfig {
 		return this.mapConfig;
 	}
 
-	public PlayerConfig getPlayerConfig() {
+	public WaitingLobbyConfig getPlayerConfig() {
 		return this.playerConfig;
 	}
 
